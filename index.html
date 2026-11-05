@@ -3,321 +3,307 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kalkulator Bonus Project - DataOn / IndoDev</title>
-    <style>
-        :root {
-            --primary-color: #1e3a8a;
-            --secondary-color: #3b82f6;
-            --bg-color: #f8fafc;
-            --card-bg: #ffffff;
-            --text-color: #1e293b;
-            --border-color: #cbd5e1;
-        }
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            margin: 0;
-            padding: 20px;
-        }
-        .container {
-            max-width: 850px;
-            margin: 0 auto;
-            background: var(--card-bg);
-            padding: 30px;
-            border-radius: 12px;
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-        }
-        h2, h3 {
-            color: var(--primary-color);
-            border-bottom: 2px solid #e2e8f0;
-            padding-bottom: 8px;
-            margin-top: 25px;
-        }
-        .form-group {
-            margin-bottom: 15px;
-        }
-        label {
-            display: block;
-            font-weight: 600;
-            margin-bottom: 5px;
-            font-size: 14px;
-        }
-        input, select {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            font-size: 14px;
-            box-sizing: border-box;
-        }
-        input:focus, select:focus {
-            outline: none;
-            border-color: var(--secondary-color);
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
-        }
-        .row {
-            display: flex;
-            gap: 15px;
-        }
-        .col {
-            flex: 1;
-        }
-        button {
-            background-color: var(--primary-color);
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            font-size: 16px;
-            font-weight: 600;
-            border-radius: 6px;
-            cursor: pointer;
-            width: 100%;
-            margin-top: 20px;
-            transition: background-color 0.2s;
-        }
-        button:hover {
-            background-color: #1d4ed8;
-        }
-        .result-box {
-            margin-top: 30px;
-            background: #eff6ff;
-            border: 1px solid #bfdbfe;
-            padding: 20px;
-            border-radius: 8px;
-        }
-        .result-box h3 {
-            margin-top: 0;
-            color: #1e40af;
-            border-bottom: none;
-        }
-        .result-item {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-            font-size: 15px;
-        }
-        .result-item.total {
-            font-weight: bold;
-            font-size: 18px;
-            border-top: 1px solid #bfdbfe;
-            padding-top: 10px;
-            margin-top: 10px;
-            color: #1e3a8a;
-        }
-        .note {
-            font-size: 12px;
-            color: #64748b;
-            margin-top: 4px;
-        }
-    </style>
+    <title>Generator Laporan Kegiatan RT</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF & AutoTable Plugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 </head>
-<body>
+<body class="bg-slate-100 min-h-screen text-slate-800 antialiased py-6 px-3 sm:px-6">
 
-<div class="container">
-    <h2>Kalkulator Bonus Project DataOn / IndoDev</h2>
-    <p class="note">Hitung estimasi bonus individual berdasarkan Net Project Revenue, Punctuality (OBP), TS Quotient, Disciplinary, dan Job Coefficient.</p>
-
-    <form id="bonusForm" onsubmit="calculateBonus(event)">
-        <h3>1. Parameter Project & Keuangan</h3>
-        <div class="row">
-            <div class="col">
-                <div class="form-group">
-                    <label>Net Project Revenue (NPR) (Rp)</label>
-                    <input type="number" id="npr" required placeholder="Contoh: 100000000" value="100000000">
-                </div>
-            </div>
-            <div class="col">
-                <div class="form-group">
-                    <label>Shared Revenue Percentage (%)</label>
-                    <input type="number" id="srp" step="0.01" value="4" readonly>
-                    <span class="note">Standar kebijakan: 4% dari NPR</span>
-                </div>
-            </div>
+    <div class="max-w-3xl mx-auto space-y-6">
+        
+        <!-- Header Judul Modern -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 text-center">
+            <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Laporan Kegiatan RT</h1>
+            <p class="text-xs sm:text-sm text-slate-500 mt-1">Kelurahan Pondok Aren, Kota Tangerang Selatan</p>
         </div>
 
-        <div class="row">
-            <div class="col">
-                <div class="form-group">
-                    <label>Budget Man-Days</label>
-                    <input type="number" id="budgetDays" required value="100">
+        <!-- Bagian Pengaturan Surat -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+            <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider">1. Pengaturan Surat</h2>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nomor RT</label>
+                    <input type="text" id="inputNoRt" value="004" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
                 </div>
-            </div>
-            <div class="col">
-                <div class="form-group">
-                    <label>Actual Man-Days</label>
-                    <input type="number" id="actualDays" required value="105">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Ketua RT</label>
+                    <input type="text" id="inputNamaRt" value="SANIYAH" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm uppercase focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Tempat & Tanggal Surat</label>
+                    <input type="text" id="inputTempatTanggal" value="Pondok Aren, 5 November 2026" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
                 </div>
             </div>
         </div>
 
-        <h3>2. Parameter Karyawan & Kinerja Tim</h3>
-        <div class="row">
-            <div class="col">
-                <div class="form-group">
-                    <label>Timesheet Hours (Jam Karyawan)</label>
-                    <input type="number" id="tsHours" required value="160">
+        <!-- Bagian Form Input Kegiatan dengan Tombol Cepat -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
+                <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider">2. Tambah Kegiatan</h2>
+                <span class="text-[11px] text-amber-600 bg-amber-50 px-2.5 py-1 rounded-lg font-medium">💡 Tips: Klik tombol cepat di bawah untuk isi otomatis</span>
+            </div>
+
+            <!-- Tombol Cepat / Template Instan -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <button type="button" onclick="isiTemplate('pengajian')" class="text-left bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 p-2.5 rounded-xl transition text-xs font-semibold flex items-center justify-between">
+                    <span>📖 Pengajian Musola</span>
+                    <span class="text-[10px] bg-blue-200 text-blue-900 px-1.5 py-0.5 rounded">Pakai</span>
+                </button>
+                <button type="button" onclick="isiTemplate('arisan')" class="text-left bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 p-2.5 rounded-xl transition text-xs font-semibold flex items-center justify-between">
+                    <span>☕ Arisan & Senam</span>
+                    <span class="text-[10px] bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded">Pakai</span>
+                </button>
+                <button type="button" onclick="isiTemplate('posyandu')" class="text-left bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-800 p-2.5 rounded-xl transition text-xs font-semibold flex items-center justify-between">
+                    <span>👶 Kegiatan Posyandu</span>
+                    <span class="text-[10px] bg-purple-200 text-purple-900 px-1.5 py-0.5 rounded">Pakai</span>
+                </button>
+            </div>
+
+            <div class="space-y-3 pt-2">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Hari / Tanggal Kegiatan</label>
+                    <input type="text" id="inputTanggal" placeholder="Contoh: 5 Juli 2026" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Uraian Kegiatan</label>
+                    <textarea id="inputUraian" rows="2" placeholder="Nama kegiatan yang dilakukan..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Hasil Kegiatan</label>
+                    <textarea id="inputHasil" rows="2" placeholder="Hasil atau tujuan kegiatan..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition"></textarea>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Keterangan (Opsional)</label>
+                    <input type="text" id="inputKet" placeholder="Contoh: Rutin / Pengajian" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
                 </div>
             </div>
-            <div class="col">
-                <div class="form-group">
-                    <label>Actual Attendance Hours (Jam Kehadiran)</label>
-                    <input type="number" id="attHours" required value="180">
-                </div>
+            <button type="button" id="btnTambah" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-semibold py-3 px-4 rounded-xl shadow-sm transition text-sm flex items-center justify-center gap-2">
+                <span>+ Masukkan ke Daftar</span>
+            </button>
+        </div>
+
+        <!-- Daftar Kegiatan Model Accordion (Daftar Lipat) -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
+            <div class="flex justify-between items-center">
+                <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider">3. Daftar Kegiatan (<span id="jumlahKegiatan">0</span>)</h2>
+                <span class="text-xs text-slate-400">Klik untuk buka/tutup detail</span>
+            </div>
+            
+            <div id="containerListKegiatan" class="space-y-2">
+                <!-- Data accordion akan muncul secara dinamis di sini -->
             </div>
         </div>
 
-        <div class="row">
-            <div class="col">
-                <div class="form-group">
-                    <label>Total Σ (Coefficient × Time Sheet) Seluruh Tim</label>
-                    <input type="number" id="totalWeightedTs" required value="5000" placeholder="Akumulasi koefisien dikali timesheet semua anggota tim">
-                    <span class="note">Total penyebut pembagi dalam formula bonus</span>
-                </div>
-            </div>
-            <div class="col">
-                <div class="form-group">
-                    <label>Job Grade & Level Karyawan</label>
-                    <select id="jobCoefficient">
-                        <option value="4.00">Grade 8 - Dept Head (Coeff: 4.00)</option>
-                        <option value="3.50">Grade 7 - Senior Supervisor / Senior PM (Coeff: 3.50)</option>
-                        <option value="3.00">Grade 6 - Supervisor / PM (Coeff: 3.00)</option>
-                        <option value="2.50" selected>Grade 5 - Junior Supervisor / Associate PM (Coeff: 2.50)</option>
-                        <option value="2.00">Grade 4 - Senior Staff (Coeff: 2.00)</option>
-                        <option value="1.50">Grade 3 - Staff (Coeff: 1.50)</option>
-                        <option value="1.00">Grade 2 - Junior Staff (Coeff: 1.00)</option>
-                        <option value="0.00">Grade 1 - Non Permanent (Coeff: 0.00)</option>
-                    </select>
-                </div>
-            </div>
+        <!-- Tombol Download PDF Utama -->
+        <div class="pt-2">
+            <button type="button" id="btnDownload" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold py-4 px-6 rounded-2xl shadow-md transition text-base flex items-center justify-center gap-2">
+                📥 Download File PDF Resmi
+            </button>
         </div>
 
-        <div class="row">
-            <div class="col">
-                <div class="form-group">
-                    <label>Peran Tambahan Project Manager (PM)</label>
-                    <select id="extraPm">
-                        <option value="0" selected>Tidak (0)</option>
-                        <option value="0.5">Ya, sebagai PM (+0.5)</option>
-                    </select>
-                </div>
-            </div>
-            <div class="col">
-                <div class="form-group">
-                    <label>Tingkat Disiplin (Sanksi / Penghargaan)</label>
-                    <select id="disciplinary">
-                        <option value="1.00" selected>Memiliki Award / Tanpa SP (100%)</option>
-                        <option value="0.50">Memiliki SP1 (50%)</option>
-                        <option value="0.25">Memiliki SP2 (25%)</option>
-                        <option value="0.00">Memiliki SP3 (0%)</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-
-        <button type="submit">Hitung Bonus Project</button>
-    </form>
-
-    <div id="resultSection" class="result-box" style="display: none;">
-        <h3>Hasil Kalkulasi Bonus</h3>
-        <div class="result-item">
-            <span>Shared Project Revenue (SR):</span>
-            <span id="resSR">-</span>
-        </div>
-        <div class="result-item">
-            <span>Budget Utilization Quotient (Punctuality):</span>
-            <span id="resPunctuality">-</span>
-        </div>
-        <div class="result-item">
-            <span>Time Sheet Quotient (TS Quotient):</span>
-            <span id="resTsQuotient">-</span>
-        </div>
-        <div class="result-item">
-            <span>Final Job Coefficient (termasuk extra PM):</span>
-            <span id="resCoeff">-</span>
-        </div>
-        <div class="result-item">
-            <span>Disciplinary Multiplier:</span>
-            <span id="resDisc">-</span>
-        </div>
-        <div class="result-item total">
-            <span>Estimasi Bonus Diterima:</span>
-            <span id="resTotalBonus">-</span>
-        </div>
     </div>
-</div>
 
-<script>
-function formatRupiah(angka) {
-    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
-}
+    <!-- Script Logika, Template Instan, & Accordion -->
+    <script>
+        let dataKegiatan = [
+            { tanggal: "5 Juli 2026", uraian: "KEGIATAN PENGAJIAN MINGGUAN MAJELIS TALIM MUSOLA AR-RIDO", hasil: "MENINGKATKAN IKATAN TALI SILATURAHMI", ket: "PENGAJIAN MINGGUAN" },
+            { tanggal: "11 Juli 2026", uraian: "ARISAN BULANAN LINGKUNGAN RT 004 & SENAM BERSAMA", hasil: "MENJAGA KEBERSAMAAN DAN MEMPERERAT SILATURAHMI ANTAR WARGA RT 004", ket: "DILAKUKAN RUTIN TIAP BULAN" },
+            { tanggal: "21 Juli 2026", uraian: "KEGIATAN POSYANDU", hasil: "MEMASTIKAN KESEHATAN BALITA DAN IBU HAMIL DILINGKUNGAN RT 004", ket: "DILAKUKAN RUTIN TIAP BULAN" }
+        ];
 
-function calculateBonus(event) {
-    event.preventDefault();
+        // Fungsi Tombol Cepat / Template Instan
+        window.isiTemplate = function(jenis) {
+            if (jenis === 'pengajian') {
+                document.getElementById('inputUraian').value = "KEGIATAN PENGAJIAN MINGGUAN MAJELIS TALIM MUSOLA AR-RIDO";
+                document.getElementById('inputHasil').value = "MENINGKATKAN IKATAN TALI SILATURAHMI";
+                document.getElementById('inputKet').value = "PENGAJIAN MINGGUAN";
+            } else if (jenis === 'arisan') {
+                document.getElementById('inputUraian').value = "ARISAN BULANAN LINGKUNGAN RT 004 & SENAM BERSAMA";
+                document.getElementById('inputHasil').value = "MENJAGA KEBERSAMAAN DAN MEMPERERAT SILATURAHMI ANTAR WARGA RT 004";
+                document.getElementById('inputKet').value = "DILAKUKAN RUTIN TIAP BULAN";
+            } else if (jenis === 'posyandu') {
+                document.getElementById('inputUraian').value = "KEGIATAN POSYANDU";
+                document.getElementById('inputHasil').value = "MEMASTIKAN KESEHATAN BALITA DAN IBU HAMIL DILINGKUNGAN RT 004";
+                document.getElementById('inputKet').value = "DILAKUKAN RUTIN TIAP BULAN";
+            }
+            // Fokus otomatis ke kolom tanggal agar user tinggal isi tanggalnya
+            document.getElementById('inputTanggal').focus();
+        }
 
-    // Ambil nilai input
-    const npr = parseFloat(document.getElementById('npr').value) || 0;
-    const srp = (parseFloat(document.getElementById('srp').value) || 4) / 100;
-    const budgetDays = parseFloat(document.getElementById('budgetDays').value) || 1;
-    const actualDays = parseFloat(document.getElementById('actualDays').value) || 1;
-    
-    const tsHours = parseFloat(document.getElementById('tsHours').value) || 0;
-    const attHours = parseFloat(document.getElementById('attHours').value) || 1;
-    
-    const totalWeightedTs = parseFloat(document.getElementById('totalWeightedTs').value) || 1;
-    const baseCoeff = parseFloat(document.getElementById('jobCoefficient').value) || 0;
-    const extraPm = parseFloat(document.getElementById('extraPm').value) || 0;
-    const disciplinary = parseFloat(document.getElementById('disciplinary').value) || 0;
+        function renderTabel() {
+            const container = document.getElementById('containerListKegiatan');
+            document.getElementById('jumlahKegiatan').innerText = dataKegiatan.length;
+            container.innerHTML = '';
+            
+            if (dataKegiatan.length === 0) {
+                container.innerHTML = `<p class="text-center text-xs text-slate-400 py-4">Belum ada kegiatan yang ditambahkan.</p>`;
+                return;
+            }
 
-    // Hitung SR (Shared Revenue)
-    const SR = npr * srp;
+            dataKegiatan.forEach((item, index) => {
+                const wrapper = document.createElement('div');
+                wrapper.className = "border border-slate-200 rounded-xl overflow-hidden bg-slate-50 transition";
+                
+                wrapper.innerHTML = `
+                    <div onclick="toggleAccordion(${index})" class="p-3.5 sm:p-4 flex justify-between items-center cursor-pointer hover:bg-slate-100 select-none">
+                        <div class="flex items-center gap-3 overflow-hidden">
+                            <span class="bg-blue-600 text-white font-bold text-xs px-2 py-1 rounded-lg shrink-0">#${index + 1}</span>
+                            <div class="truncate">
+                                <p class="text-xs font-bold text-slate-800 truncate">${item.uraian}</p>
+                                <p class="text-[11px] text-slate-500">${item.tanggal}</p>
+                            </div>
+                        </div>
+                        <div class="flex items-center gap-2 shrink-0">
+                            <span id="icon-${index}" class="text-slate-400 text-xs font-bold transition-transform duration-200">▼</span>
+                        </div>
+                    </div>
 
-    // Hitung Budget Utilization / Punctuality (Rule 4)
-    // OBP = (Actual - Budget) / Budget
-    const obp = (actualDays - budgetDays) / budgetDays;
-    let punctuality = 0;
-    if (obp <= 0.05) {
-        punctuality = 1.0; // 100%
-    } else if (obp > 0.05 && obp < 0.50) {
-        punctuality = 1.10 - (obp * 2);
-        if (punctuality < 0) punctuality = 0;
-    } else {
-        punctuality = 0.0; // 0%
-    }
+                    <div id="content-${index}" class="hidden px-4 pb-4 pt-1 border-t border-slate-200 bg-white text-xs sm:text-sm space-y-2">
+                        <div>
+                            <span class="text-slate-400 font-medium text-[10px] uppercase block">Hari / Tanggal:</span>
+                            <p class="font-semibold text-slate-700">${item.tanggal}</p>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 font-medium text-[10px] uppercase block">Uraian Kegiatan:</span>
+                            <p class="font-semibold text-slate-800">${item.uraian}</p>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 font-medium text-[10px] uppercase block">Hasil Kegiatan:</span>
+                            <p class="text-slate-700">${item.hasil}</p>
+                        </div>
+                        <div>
+                            <span class="text-slate-400 font-medium text-[10px] uppercase block">Keterangan:</span>
+                            <p class="text-slate-600">${item.ket || '-'}</p>
+                        </div>
+                        <div class="pt-2 flex justify-end">
+                            <button onclick="hapusBaris(${index})" class="bg-red-50 text-red-600 hover:bg-red-100 font-semibold px-3 py-1.5 rounded-lg transition text-xs">
+                                🗑️ Hapus Kegiatan Ini
+                            </button>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(wrapper);
+            });
+        }
 
-    // Hitung TS Quotient (Rule 5)
-    const tsEntryPct = tsHours / attHours;
-    let tsQuotient = 0;
-    if (tsEntryPct >= 0.50) {
-        tsQuotient = 1.0;
-    } else if (tsEntryPct < 0.50 && tsEntryPct > 0.25) {
-        tsQuotient = 1.0 - ((0.50 - tsEntryPct) * 4);
-    } else {
-        tsQuotient = 0.0;
-    }
+        window.toggleAccordion = function(index) {
+            const content = document.getElementById(`content-${index}`);
+            const icon = document.getElementById(`icon-${index}`);
+            
+            if (content.classList.contains('hidden')) {
+                content.classList.remove('hidden');
+                icon.style.transform = 'rotate(180deg)';
+            } else {
+                content.classList.add('hidden');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
 
-    // Hitung Job Coefficient final
-    const finalCoeff = baseCoeff > 0 ? baseCoeff + extraPm : 0;
+        document.getElementById('btnTambah').addEventListener('click', function() {
+            const tanggal = document.getElementById('inputTanggal').value.trim();
+            const uraian = document.getElementById('inputUraian').value.trim();
+            const hasil = document.getElementById('inputHasil').value.trim();
+            const ket = document.getElementById('inputKet').value.trim();
 
-    // Formula Bonus Utama:
-    // Bonus = (NPR * SRP * DSR_effective * Punctuality * TS_Quotient * Disciplinary * Job_Coefficient * Time_Sheet) / (Σ Coefficient * Time Sheet)
-    // Catatan: Proporsi DSR total yang dibagikan langsung ke software implementation/maintenance tim adalah sekitar 3% dari NPR (atau 75% dari 4% SR). 
-    // Kita gunakan porsi implementasi/maintenance standar (3.00% dari NPR atau 75% dari SR) sebagai basis distribusi utama.
-    const effectiveDSR = 0.75; // 75% dari Shared Revenue dialokasikan untuk Implementation & Maintenance team
-    
-    const numerator = NPR_calc = npr * srp * effectiveDSR * punctuality * tsQuotient * disciplinary * finalCoeff * tsHours;
-    const finalBonus = totalWeightedTs > 0 ? (numerator / totalWeightedTs) : 0;
+            if(!tanggal || !uraian || !hasil) {
+                alert('Harap isi Tanggal, Uraian, dan Hasil Kegiatan terlebih dahulu!');
+                return;
+            }
 
-    // Tampilkan hasil
-    document.getElementById('resultSection').style.display = 'block';
-    document.getElementById('resSR').innerText = formatRupiah(SR);
-    document.getElementById('resPunctuality').innerText = (punctuality * 100).toFixed(1) + '% (OBP: ' + (obp * 100).toFixed(1) + '%)';
-    document.getElementById('resTsQuotient').innerText = (tsQuotient * 100).toFixed(1) + '% (Ratio: ' + (tsEntryPct * 100).toFixed(1) + '%)';
-    document.getElementById('resCoeff').innerText = finalCoeff.toFixed(2);
-    document.getElementById('resDisc').innerText = (disciplinary * 100).toFixed(0) + '%';
-    document.getElementById('resTotalBonus').innerText = formatRupiah(finalBonus);
-}
-</script>
+            dataKegiatan.push({ tanggal, uraian, hasil, ket });
+            renderTabel();
 
+            // Reset input form
+            document.getElementById('inputTanggal').value = '';
+            document.getElementById('inputUraian').value = '';
+            document.getElementById('inputHasil').value = '';
+            document.getElementById('inputKet').value = '';
+        });
+
+        window.hapusBaris = function(index) {
+            dataKegiatan.splice(index, 1);
+            renderTabel();
+        }
+
+        renderTabel();
+
+        // LOGIKA GENERATE PDF (Tetap dipertahankan 100% aman)
+        document.getElementById('btnDownload').addEventListener('click', function () {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF('l', 'mm', 'a4'); // Landscape A4
+
+            const noRt = document.getElementById('inputNoRt').value || '004';
+            const namaRt = document.getElementById('inputNamaRt').value || 'SANIYAH';
+            const tempatTanggal = document.getElementById('inputTempatTanggal').value || 'Pondok Aren, 5 November 2026';
+
+            const tableRows = dataKegiatan.map((item, index) => [
+                index + 1,
+                item.tanggal,
+                item.uraian,
+                item.hasil,
+                item.ket || '-'
+            ]);
+
+            let pageHeight = doc.internal.pageSize.getHeight();
+            let pageWidth = doc.internal.pageSize.getWidth();
+
+            function drawHeader() {
+                doc.setFont("helvetica", "bold");
+                doc.setFontSize(12);
+                doc.text("LAPORAN KEGIATAN", pageWidth / 2, 15, { align: "center" });
+                doc.text(`RT. ${noRt}/002 KELURAHAN PONDOK AREN`, pageWidth / 2, 21, { align: "center" });
+                doc.setFontSize(10);
+                doc.text("KECAMATAN PONDOK AREN, KOTA TANGERANG SELATAN", pageWidth / 2, 27, { align: "center" });
+                
+                doc.setLineWidth(0.5);
+                doc.line(14, 31, pageWidth - 14, 31);
+            }
+
+            function drawFooter() {
+                let yPos = pageHeight - 45; 
+                let rightX = pageWidth - 25;      
+                let centerRtX = pageWidth - 45;   
+
+                doc.setFont("helvetica", "normal");
+                doc.setFontSize(10);
+
+                // Kiri: Ketua RW
+                doc.text("Mengetahui,", 25, yPos);
+                doc.text("Ketua RW. 002", 25, yPos + 6);
+                doc.text("H. ABDUL MANAN", 25, yPos + 32); 
+
+                // Kanan: Tanggal & TTD RT
+                doc.text(tempatTanggal, rightX, yPos, { align: "right" });
+                doc.text(`Ketua RT. ${noRt}`, centerRtX, yPos + 6, { align: "center" });
+                doc.text(namaRt.toUpperCase(), centerRtX, yPos + 32, { align: "center" });
+            }
+
+            doc.autoTable({
+                head: [['NO', 'HARI/TANGGAL', 'URAIAN KEGIATAN', 'HASIL KEGIATAN', 'KET.']],
+                body: tableRows,
+                startY: 36,
+                margin: { top: 36, bottom: 50, left: 14, right: 14 },
+                theme: 'grid',
+                headStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold', halign: 'center' },
+                styles: { fontSize: 9, cellPadding: 3, textColor: [0, 0, 0] },
+                columnStyles: {
+                    0: { halign: 'center', cellWidth: 12 },
+                    1: { halign: 'center', cellWidth: 35 },
+                    2: { cellWidth: 'auto' },
+                    3: { cellWidth: 'auto' },
+                    4: { halign: 'center', cellWidth: 40 }
+                },
+                didDrawPage: function (data) {
+                    drawHeader();
+                    drawFooter();
+                }
+            });
+
+            doc.save(`Laporan-Kegiatan-RT${noRt}.pdf`);
+        });
+    </script>
 </body>
 </html>
