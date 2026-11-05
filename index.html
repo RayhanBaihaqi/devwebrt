@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kalkulator Bonus Project - DataOn / IndoDev</title>
+    <style>
+        :root {
+            --primary-color: #1e3a8a;
+            --secondary-color: #3b82f6;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #1e293b;
+            --border-color: #cbd5e1;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 850px;
+            margin: 0 auto;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+        }
+        h2, h3 {
+            color: var(--primary-color);
+            border-bottom: 2px solid #e2e8f0;
+            padding-bottom: 8px;
+            margin-top: 25px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            font-weight: 600;
+            margin-bottom: 5px;
+            font-size: 14px;
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        input:focus, select:focus {
+            outline: none;
+            border-color: var(--secondary-color);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+        .row {
+            display: flex;
+            gap: 15px;
+        }
+        .col {
+            flex: 1;
+        }
+        button {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            font-size: 16px;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #1d4ed8;
+        }
+        .result-box {
+            margin-top: 30px;
+            background: #eff6ff;
+            border: 1px solid #bfdbfe;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        .result-box h3 {
+            margin-top: 0;
+            color: #1e40af;
+            border-bottom: none;
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 15px;
+        }
+        .result-item.total {
+            font-weight: bold;
+            font-size: 18px;
+            border-top: 1px solid #bfdbfe;
+            padding-top: 10px;
+            margin-top: 10px;
+            color: #1e3a8a;
+        }
+        .note {
+            font-size: 12px;
+            color: #64748b;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Kalkulator Bonus Project DataOn / IndoDev</h2>
+    <p class="note">Hitung estimasi bonus individual berdasarkan Net Project Revenue, Punctuality (OBP), TS Quotient, Disciplinary, dan Job Coefficient.</p>
+
+    <form id="bonusForm" onsubmit="calculateBonus(event)">
+        <h3>1. Parameter Project & Keuangan</h3>
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <label>Net Project Revenue (NPR) (Rp)</label>
+                    <input type="number" id="npr" required placeholder="Contoh: 100000000" value="100000000">
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    <label>Shared Revenue Percentage (%)</label>
+                    <input type="number" id="srp" step="0.01" value="4" readonly>
+                    <span class="note">Standar kebijakan: 4% dari NPR</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <label>Budget Man-Days</label>
+                    <input type="number" id="budgetDays" required value="100">
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    <label>Actual Man-Days</label>
+                    <input type="number" id="actualDays" required value="105">
+                </div>
+            </div>
+        </div>
+
+        <h3>2. Parameter Karyawan & Kinerja Tim</h3>
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <label>Timesheet Hours (Jam Karyawan)</label>
+                    <input type="number" id="tsHours" required value="160">
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    <label>Actual Attendance Hours (Jam Kehadiran)</label>
+                    <input type="number" id="attHours" required value="180">
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <label>Total Σ (Coefficient × Time Sheet) Seluruh Tim</label>
+                    <input type="number" id="totalWeightedTs" required value="5000" placeholder="Akumulasi koefisien dikali timesheet semua anggota tim">
+                    <span class="note">Total penyebut pembagi dalam formula bonus</span>
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    <label>Job Grade & Level Karyawan</label>
+                    <select id="jobCoefficient">
+                        <option value="4.00">Grade 8 - Dept Head (Coeff: 4.00)</option>
+                        <option value="3.50">Grade 7 - Senior Supervisor / Senior PM (Coeff: 3.50)</option>
+                        <option value="3.00">Grade 6 - Supervisor / PM (Coeff: 3.00)</option>
+                        <option value="2.50" selected>Grade 5 - Junior Supervisor / Associate PM (Coeff: 2.50)</option>
+                        <option value="2.00">Grade 4 - Senior Staff (Coeff: 2.00)</option>
+                        <option value="1.50">Grade 3 - Staff (Coeff: 1.50)</option>
+                        <option value="1.00">Grade 2 - Junior Staff (Coeff: 1.00)</option>
+                        <option value="0.00">Grade 1 - Non Permanent (Coeff: 0.00)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="form-group">
+                    <label>Peran Tambahan Project Manager (PM)</label>
+                    <select id="extraPm">
+                        <option value="0" selected>Tidak (0)</option>
+                        <option value="0.5">Ya, sebagai PM (+0.5)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="col">
+                <div class="form-group">
+                    <label>Tingkat Disiplin (Sanksi / Penghargaan)</label>
+                    <select id="disciplinary">
+                        <option value="1.00" selected>Memiliki Award / Tanpa SP (100%)</option>
+                        <option value="0.50">Memiliki SP1 (50%)</option>
+                        <option value="0.25">Memiliki SP2 (25%)</option>
+                        <option value="0.00">Memiliki SP3 (0%)</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <button type="submit">Hitung Bonus Project</button>
+    </form>
+
+    <div id="resultSection" class="result-box" style="display: none;">
+        <h3>Hasil Kalkulasi Bonus</h3>
+        <div class="result-item">
+            <span>Shared Project Revenue (SR):</span>
+            <span id="resSR">-</span>
+        </div>
+        <div class="result-item">
+            <span>Budget Utilization Quotient (Punctuality):</span>
+            <span id="resPunctuality">-</span>
+        </div>
+        <div class="result-item">
+            <span>Time Sheet Quotient (TS Quotient):</span>
+            <span id="resTsQuotient">-</span>
+        </div>
+        <div class="result-item">
+            <span>Final Job Coefficient (termasuk extra PM):</span>
+            <span id="resCoeff">-</span>
+        </div>
+        <div class="result-item">
+            <span>Disciplinary Multiplier:</span>
+            <span id="resDisc">-</span>
+        </div>
+        <div class="result-item total">
+            <span>Estimasi Bonus Diterima:</span>
+            <span id="resTotalBonus">-</span>
+        </div>
+    </div>
+</div>
+
+<script>
+function formatRupiah(angka) {
+    return new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(angka);
+}
+
+function calculateBonus(event) {
+    event.preventDefault();
+
+    // Ambil nilai input
+    const npr = parseFloat(document.getElementById('npr').value) || 0;
+    const srp = (parseFloat(document.getElementById('srp').value) || 4) / 100;
+    const budgetDays = parseFloat(document.getElementById('budgetDays').value) || 1;
+    const actualDays = parseFloat(document.getElementById('actualDays').value) || 1;
+    
+    const tsHours = parseFloat(document.getElementById('tsHours').value) || 0;
+    const attHours = parseFloat(document.getElementById('attHours').value) || 1;
+    
+    const totalWeightedTs = parseFloat(document.getElementById('totalWeightedTs').value) || 1;
+    const baseCoeff = parseFloat(document.getElementById('jobCoefficient').value) || 0;
+    const extraPm = parseFloat(document.getElementById('extraPm').value) || 0;
+    const disciplinary = parseFloat(document.getElementById('disciplinary').value) || 0;
+
+    // Hitung SR (Shared Revenue)
+    const SR = npr * srp;
+
+    // Hitung Budget Utilization / Punctuality (Rule 4)
+    // OBP = (Actual - Budget) / Budget
+    const obp = (actualDays - budgetDays) / budgetDays;
+    let punctuality = 0;
+    if (obp <= 0.05) {
+        punctuality = 1.0; // 100%
+    } else if (obp > 0.05 && obp < 0.50) {
+        punctuality = 1.10 - (obp * 2);
+        if (punctuality < 0) punctuality = 0;
+    } else {
+        punctuality = 0.0; // 0%
+    }
+
+    // Hitung TS Quotient (Rule 5)
+    const tsEntryPct = tsHours / attHours;
+    let tsQuotient = 0;
+    if (tsEntryPct >= 0.50) {
+        tsQuotient = 1.0;
+    } else if (tsEntryPct < 0.50 && tsEntryPct > 0.25) {
+        tsQuotient = 1.0 - ((0.50 - tsEntryPct) * 4);
+    } else {
+        tsQuotient = 0.0;
+    }
+
+    // Hitung Job Coefficient final
+    const finalCoeff = baseCoeff > 0 ? baseCoeff + extraPm : 0;
+
+    // Formula Bonus Utama:
+    // Bonus = (NPR * SRP * DSR_effective * Punctuality * TS_Quotient * Disciplinary * Job_Coefficient * Time_Sheet) / (Σ Coefficient * Time Sheet)
+    // Catatan: Proporsi DSR total yang dibagikan langsung ke software implementation/maintenance tim adalah sekitar 3% dari NPR (atau 75% dari 4% SR). 
+    // Kita gunakan porsi implementasi/maintenance standar (3.00% dari NPR atau 75% dari SR) sebagai basis distribusi utama.
+    const effectiveDSR = 0.75; // 75% dari Shared Revenue dialokasikan untuk Implementation & Maintenance team
+    
+    const numerator = NPR_calc = npr * srp * effectiveDSR * punctuality * tsQuotient * disciplinary * finalCoeff * tsHours;
+    const finalBonus = totalWeightedTs > 0 ? (numerator / totalWeightedTs) : 0;
+
+    // Tampilkan hasil
+    document.getElementById('resultSection').style.display = 'block';
+    document.getElementById('resSR').innerText = formatRupiah(SR);
+    document.getElementById('resPunctuality').innerText = (punctuality * 100).toFixed(1) + '% (OBP: ' + (obp * 100).toFixed(1) + '%)';
+    document.getElementById('resTsQuotient').innerText = (tsQuotient * 100).toFixed(1) + '% (Ratio: ' + (tsEntryPct * 100).toFixed(1) + '%)';
+    document.getElementById('resCoeff').innerText = finalCoeff.toFixed(2);
+    document.getElementById('resDisc').innerText = (disciplinary * 100).toFixed(0) + '%';
+    document.getElementById('resTotalBonus').innerText = formatRupiah(finalBonus);
+}
+</script>
+
+</body>
+</html>
