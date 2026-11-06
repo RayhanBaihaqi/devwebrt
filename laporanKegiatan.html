@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="id" class="min-h-screen" x-data="{ 
+    darkMode: false,
+    activeTab: 'form', 
+    noRt: '004',
+    namaRt: 'SANIYAH',
+    tempatTanggal: 'Pondok Aren, 5 November 2026',
+    inputTanggal: '',
+    inputUraian: '',
+    inputHasil: '',
+    inputKet: '',
+    dataKegiatan: [
+        { tanggal: '5 Juli 2026', uraian: 'KEGIATAN PENGAJIAN MINGGUAN MAJELIS TALIM MUSOLA AR-RIDO', hasil: 'MENINGKATKAN IKATAN TALI SILATURAHMI', ket: 'PENGAJIAN MINGGUAN' },
+        { tanggal: '11 Juli 2026', uraian: 'ARISAN BULANAN LINGKUNGAN RT 004 & SENAM BERSAMA', hasil: 'MENJAGA KEBERSAMAAN DAN MEMPERERAT SILATURAHMI ANTAR WARGA RT 004', ket: 'DILAKUKAN RUTIN TIAP BULAN' },
+        { tanggal: '21 Juli 2026', uraian: 'KEGIATAN POSYANDU', hasil: 'MEMASTIKAN KESEHATAN BALITA DAN IBU HAMIL DILINGKUNGAN RT 004', ket: 'DILAKUKAN RUTIN TIAP BULAN' }
+    ],
+    activeAccordion: null,
+    toggleTheme() {
+        this.darkMode = !this.darkMode;
+        if (this.darkMode) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    },
+    isiTemplate(jenis) {
+        if (jenis === 'pengajian') {
+            this.inputUraian = 'KEGIATAN PENGAJIAN MINGGUAN MAJELIS TALIM MUSOLA AR-RIDO';
+            this.inputHasil = 'MENINGKATKAN IKATAN TALI SILATURAHMI';
+            this.inputKet = 'PENGAJIAN MINGGUAN';
+        } else if (jenis === 'arisan') {
+            this.inputUraian = 'ARISAN BULANAN LINGKUNGAN RT 004 & SENAM BERSAMA';
+            this.inputHasil = 'MENJAGA KEBERSAMAAN DAN MEMPERERAT SILATURAHMI ANTAR WARGA RT 004';
+            this.inputKet = 'DILAKUKAN RUTIN TIAP BULAN';
+        } else if (jenis === 'posyandu') {
+            this.inputUraian = 'KEGIATAN POSYANDU';
+            this.inputHasil = 'MEMASTIKAN KESEHATAN BALITA DAN IBU HAMIL DILINGKUNGAN RT 004';
+            this.inputKet = 'DILAKUKAN RUTIN TIAP BULAN';
+        }
+        this.activeTab = 'form';
+        document.getElementById('inputTanggal').focus();
+    },
+    tambahKegiatan() {
+        if(!this.inputTanggal || !this.inputUraian || !this.inputHasil) {
+            alert('Harap isi Tanggal, Uraian, dan Hasil Kegiatan terlebih dahulu!');
+            return;
+        }
+        this.dataKegiatan.push({ 
+            tanggal: this.inputTanggal, 
+            uraian: this.inputUraian, 
+            hasil: this.inputHasil, 
+            ket: this.inputKet 
+        });
+        this.inputTanggal = '';
+        this.inputUraian = '';
+        this.inputHasil = '';
+        this.inputKet = '';
+        alert('Kegiatan berhasil ditambahkan ke daftar!');
+        this.activeTab = 'list'; 
+    },
+    hapusKegiatan(index) {
+        if(confirm('Hapus kegiatan ini?')) {
+            this.dataKegiatan.splice(index, 1);
+        }
+    },
+    downloadPDF() {
+        const { jsPDF } = window.jspdf;
+        const doc = new jsPDF('l', 'mm', 'a4');
+
+        const tableRows = this.dataKegiatan.map((item, index) => [
+            index + 1,
+            item.tanggal,
+            item.uraian,
+            item.hasil,
+            item.ket || '-'
+        ]);
+
+        let pageHeight = doc.internal.pageSize.getHeight();
+        let pageWidth = doc.internal.pageSize.getWidth();
+
+        function drawHeader() {
+            doc.setFont('helvetica', 'bold');
+            doc.setFontSize(12);
+            doc.text('LAPORAN KEGIATAN', pageWidth / 2, 15, { align: 'center' });
+            doc.text(`RT. ${document.getElementById('inputNoRt').value || '004'}/002 KELURAHAN PONDOK AREN`, pageWidth / 2, 21, { align: 'center' });
+            doc.setFontSize(10);
+            doc.text('KECAMATAN PONDOK AREN, KOTA TANGERANG SELATAN', pageWidth / 2, 27, { align: 'center' });
+            
+            doc.setLineWidth(0.5);
+            doc.line(14, 31, pageWidth - 14, 31);
+        }
+
+        function drawFooter() {
+            let yPos = pageHeight - 45; 
+            let rightX = pageWidth - 25;      
+            let centerRtX = pageWidth - 45;   
+
+            doc.setFont('helvetica', 'normal');
+            doc.setFontSize(10);
+
+            doc.text('Mengetahui,', 25, yPos);
+            doc.text('Ketua RW. 002', 25, yPos + 6);
+            doc.text('H. ABDUL MANAN', 25, yPos + 32); 
+
+            doc.text(document.getElementById('inputTempatTanggal').value || 'Pondok Aren, 5 November 2026', rightX, yPos, { align: 'right' });
+            doc.text(`Ketua RT. ${document.getElementById('inputNoRt').value || '004'}`, centerRtX, yPos + 6, { align: 'center' });
+            doc.text((document.getElementById('inputNamaRt').value || 'SANIYAH').toUpperCase(), centerRtX, yPos + 32, { align: 'center' });
+        }
+
+        doc.autoTable({
+            head: [['NO', 'HARI/TANGGAL', 'URAIAN KEGIATAN', 'HASIL KEGIATAN', 'KET.']],
+            body: tableRows,
+            startY: 36,
+            margin: { top: 36, bottom: 50, left: 14, right: 14 },
+            theme: 'grid',
+            headStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold', halign: 'center' },
+            styles: { fontSize: 9, cellPadding: 3, textColor: [0, 0, 0] },
+            columnStyles: {
+                0: { halign: 'center', cellWidth: 12 },
+                1: { halign: 'center', cellWidth: 35 },
+                2: { cellWidth: 'auto' },
+                3: { cellWidth: 'auto' },
+                4: { halign: 'center', cellWidth: 40 }
+            },
+            didDrawPage: function (data) {
+                drawHeader();
+                drawFooter();
+            }
+        });
+
+        doc.save(`Laporan-Kegiatan-RT${document.getElementById('inputNoRt').value || '004'}.pdf`);
+    }
+}" :class="{ 'dark': darkMode }">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Generator Laporan Kegiatan RT</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- jsPDF & AutoTable Plugin -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .apple-glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.03);
+        }
+        .dark .apple-glass {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.4);
+        }
+        .apple-button {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(203, 213, 225, 0.8);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .dark .apple-button {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        .apple-card {
+            background: rgba(255, 255, 255, 0.75);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 1);
+            border-left: 1px solid rgba(255, 255, 255, 0.9);
+            border-right: 1px solid rgba(255, 255, 255, 0.4);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.04);
+        }
+        .dark .apple-card {
+            background: rgba(30, 41, 59, 0.5);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+            border-right: 1px solid rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            box-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-100 via-indigo-50/50 to-slate-100 dark:from-[#050811] dark:via-[#0f172a] dark:to-[#050811] text-slate-800 dark:text-slate-100 min-h-screen selection:bg-indigo-500 selection:text-white transition-colors duration-300 relative overflow-x-hidden flex flex-col justify-between">
+
+    <!-- Ambient Glow -->
+    <div class="fixed top-10 left-1/4 w-[450px] h-[450px] bg-indigo-500/10 dark:bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none -z-10"></div>
+    <div class="fixed top-60 right-1/4 w-[400px] h-[400px] bg-purple-500/10 dark:bg-purple-600/20 rounded-full blur-[120px] pointer-events-none -z-10"></div>
+
+    <div class="flex flex-col min-h-screen justify-between w-full">
+        
+        <!-- HEADER -->
+        <header class="apple-glass sticky top-0 z-40 transition-colors duration-300">
+            <div class="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <!-- Tombol Kembali diarahkan langsung ke Katalog Surat di index.html -->
+                    <a href="index.html#letters" class="p-2 -ml-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-500/10 transition flex items-center justify-center no-underline" title="Kembali ke Katalog Surat">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                    </a>
+
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-600 to-teal-500 flex items-center justify-center font-bold text-xs text-white shadow-md shadow-emerald-500/25">
+                        RT
+                    </div>
+                    <span class="font-bold tracking-tight text-slate-900 dark:text-white text-sm sm:text-base">Laporan Kegiatan</span>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <button @click="toggleTheme()" class="p-2.5 rounded-xl apple-button text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition" title="Ganti Tema">
+                        <svg x-show="darkMode" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <svg x-show="!darkMode" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path></svg>
+                    </button>
+                </div>
+            </div>
+        </header>
+
+        <!-- MAIN CONTENT -->
+        <main class="max-w-3xl mx-auto px-6 py-8 w-full flex-grow space-y-6">
+            
+            <!-- Pengaturan Surat -->
+            <div class="apple-card rounded-3xl p-5 space-y-3">
+                <h2 class="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">Identitas Surat</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Nomor RT</label>
+                        <input type="text" id="inputNoRt" x-model="noRt" class="w-full bg-white/60 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-700/80 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition focus:ring-2 focus:ring-indigo-500/20">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Nama Ketua RT</label>
+                        <input type="text" id="inputNamaRt" x-model="namaRt" class="w-full bg-white/60 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-700/80 rounded-xl px-3.5 py-2.5 text-sm uppercase text-slate-900 dark:text-white outline-none transition focus:ring-2 focus:ring-indigo-500/20">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Tempat & Tanggal</label>
+                        <input type="text" id="inputTempatTanggal" x-model="tempatTanggal" class="w-full bg-white/60 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-700/80 rounded-xl px-3.5 py-2.5 text-sm text-slate-900 dark:text-white outline-none transition focus:ring-2 focus:ring-indigo-500/20">
+                    </div>
+                </div>
+            </div>
+
+            <!-- SISTEM TAB NAVIGASI (Ikon SVG Modern Sepenuhnya) -->
+            <div class="grid grid-cols-2 gap-2 p-1.5 bg-slate-200/70 dark:bg-slate-800/70 backdrop-blur-md rounded-2xl border border-slate-300/50 dark:border-slate-700/50">
+                <button @click="activeTab = 'form'" :class="activeTab === 'form' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-sm font-bold' : 'text-slate-600 dark:text-slate-400 font-medium hover:text-slate-900 dark:hover:text-white'" class="py-3 px-4 text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                    <span>Tambah Kegiatan</span>
+                </button>
+                <button @click="activeTab = 'list'" :class="activeTab === 'list' ? 'bg-white dark:bg-slate-700 text-indigo-600 dark:text-white shadow-sm font-bold' : 'text-slate-600 dark:text-slate-400 font-medium hover:text-slate-900 dark:hover:text-white'" class="py-3 px-4 text-xs sm:text-sm rounded-xl transition flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path></svg>
+                    <span>Daftar Kegiatan (<span x-text="dataKegiatan.length"></span>)</span>
+                </button>
+            </div>
+
+            <!-- TAB 1: FORM TAMBAH KEGIATAN -->
+            <div x-show="activeTab === 'form'" x-transition class="space-y-4">
+                <div class="apple-card rounded-3xl p-6 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">Pilih Template Cepat</h2>
+                    </div>
+
+                    <!-- Tombol Cepat Template (Berjajar Menyamping / Horizontal 3 Kolom) -->
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+                        
+                        <!-- Template 1: Pengajian -->
+                        <button type="button" @click="isiTemplate('pengajian')" class="group text-left bg-blue-500/5 hover:bg-blue-500/10 border border-blue-500/15 p-3.5 rounded-2xl transition flex flex-col justify-between space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="w-8 h-8 rounded-xl bg-blue-500/10 text-blue-600 dark:text-blue-400 flex items-center justify-center shadow-sm">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                                </div>
+                                <span class="text-[10px] font-semibold text-blue-600 dark:text-blue-400 bg-blue-500/10 px-2 py-0.5 rounded-lg">Gunakan &rarr;</span>
+                            </div>
+                            <div>
+                                <span class="block text-xs font-bold text-slate-900 dark:text-white">Pengajian Musola</span>
+                                <span class="text-[11px] text-slate-500 dark:text-slate-400">Template Rutin</span>
+                            </div>
+                        </button>
+
+                        <!-- Template 2: Arisan & Senam -->
+                        <button type="button" @click="isiTemplate('arisan')" class="group text-left bg-emerald-500/5 hover:bg-emerald-500/10 border border-emerald-500/15 p-3.5 rounded-2xl transition flex flex-col justify-between space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="w-8 h-8 rounded-xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shadow-sm">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+                                </div>
+                                <span class="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-lg">Gunakan &rarr;</span>
+                            </div>
+                            <div>
+                                <span class="block text-xs font-bold text-slate-900 dark:text-white">Arisan & Senam</span>
+                                <span class="text-[11px] text-slate-500 dark:text-slate-400">Template Warga</span>
+                            </div>
+                        </button>
+
+                        <!-- Template 3: Posyandu -->
+                        <button type="button" @click="isiTemplate('posyandu')" class="group text-left bg-purple-500/5 hover:bg-purple-500/10 border border-purple-500/15 p-3.5 rounded-2xl transition flex flex-col justify-between space-y-3">
+                            <div class="flex items-center justify-between">
+                                <div class="w-8 h-8 rounded-xl bg-purple-500/10 text-purple-600 dark:text-purple-400 flex items-center justify-center shadow-sm">
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"></path></svg>
+                                </div>
+                                <span class="text-[10px] font-semibold text-purple-600 dark:text-purple-400 bg-purple-500/10 px-2 py-0.5 rounded-lg">Gunakan &rarr;</span>
+                            </div>
+                            <div>
+                                <span class="block text-xs font-bold text-slate-900 dark:text-white">Kegiatan Posyandu</span>
+                                <span class="text-[11px] text-slate-500 dark:text-slate-400">Template Kesehatan</span>
+                            </div>
+                        </button>
+
+                    </div>
+
+                    <div class="space-y-3.5 pt-2">
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Hari / Tanggal Kegiatan</label>
+                            <input type="text" id="inputTanggal" x-model="inputTanggal" placeholder="Contoh: 5 Juli 2026" class="w-full bg-white/60 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl px-3.5 py-3 text-sm text-slate-900 dark:text-white outline-none transition focus:ring-2 focus:ring-indigo-500/20">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Uraian Kegiatan</label>
+                            <textarea id="inputUraian" x-model="inputUraian" rows="2.5" placeholder="Nama kegiatan yang dilakukan..." class="w-full bg-white/60 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl px-3.5 py-3 text-sm text-slate-900 dark:text-white outline-none transition focus:ring-2 focus:ring-indigo-500/20 resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Hasil Kegiatan</label>
+                            <textarea id="inputHasil" x-model="inputHasil" rows="2.5" placeholder="Hasil atau tujuan kegiatan..." class="w-full bg-white/60 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl px-3.5 py-3 text-sm text-slate-900 dark:text-white outline-none transition focus:ring-2 focus:ring-indigo-500/20 resize-none"></textarea>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold text-slate-600 dark:text-slate-400 mb-1">Keterangan (Opsional)</label>
+                            <input type="text" id="inputKet" x-model="inputKet" placeholder="Contoh: Rutin / Pengajian" class="w-full bg-white/60 dark:bg-slate-900/50 border border-slate-200/80 dark:border-slate-700/80 rounded-2xl px-3.5 py-3 text-sm text-slate-900 dark:text-white outline-none transition focus:ring-2 focus:ring-indigo-500/20">
+                        </div>
+                    </div>
+                    <button type="button" @click="tambahKegiatan()" class="w-full bg-emerald-600 hover:bg-emerald-500 active:scale-[0.99] text-white font-semibold py-3.5 px-4 rounded-2xl shadow-lg shadow-emerald-600/20 transition text-sm flex items-center justify-center gap-2">
+                        <span>+ Masukkan ke Daftar</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- TAB 2: DAFTAR KEGIATAN & DOWNLOAD PDF -->
+            <div x-show="activeTab === 'list'" x-transition class="space-y-4">
+                <div class="apple-card rounded-3xl p-6 space-y-4">
+                    <div class="flex justify-between items-center">
+                        <h2 class="text-xs font-bold text-slate-400 dark:text-slate-400 uppercase tracking-wider">Daftar Kegiatan Tersimpan</h2>
+                        <span class="text-[11px] text-slate-400">Total: <span x-text="dataKegiatan.length"></span> kegiatan</span>
+                    </div>
+                    
+                    <div class="space-y-2.5 max-h-[380px] overflow-y-auto pr-1">
+                        <template x-for="(item, index) in dataKegiatan" :key="index">
+                            <div class="border border-slate-200/80 dark:border-slate-700/80 rounded-2xl overflow-hidden bg-white/50 dark:bg-slate-900/40 transition">
+                                <div @click="activeAccordion = activeAccordion === index ? null : index" class="p-4 flex justify-between items-center cursor-pointer hover:bg-slate-500/5 select-none">
+                                    <div class="flex items-center gap-3.5 overflow-hidden">
+                                        <span class="bg-indigo-600 text-white font-bold text-xs px-2.5 py-1.5 rounded-xl shrink-0 shadow-sm" x-text="'#' + (index + 1)"></span>
+                                        <div class="truncate">
+                                            <p class="text-xs font-bold text-slate-900 dark:text-white truncate" x-text="item.uraian"></p>
+                                            <p class="text-[11px] text-slate-500 mt-0.5" x-text="item.tanggal"></p>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2 shrink-0">
+                                        <!-- Ikon panah SVG modern pengganti panah lama -->
+                                        <span class="w-7 h-7 rounded-xl bg-slate-500/10 flex items-center justify-center text-slate-500 transition-transform duration-200" :style="activeAccordion === index ? 'transform: rotate(180deg);' : ''">
+                                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <div x-show="activeAccordion === index" x-transition class="px-5 pb-5 pt-2 border-t border-slate-200/80 dark:border-slate-700/80 bg-white/80 dark:bg-slate-900/60 text-xs sm:text-sm space-y-3">
+                                    <div>
+                                        <span class="text-slate-400 font-medium text-[10px] uppercase tracking-wider block">Hari / Tanggal:</span>
+                                        <p class="font-semibold text-slate-800 dark:text-slate-200 mt-0.5" x-text="item.tanggal"></p>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-400 font-medium text-[10px] uppercase tracking-wider block">Uraian Kegiatan:</span>
+                                        <p class="font-semibold text-slate-900 dark:text-slate-100 mt-0.5" x-text="item.uraian"></p>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-400 font-medium text-[10px] uppercase tracking-wider block">Hasil Kegiatan:</span>
+                                        <p class="text-slate-700 dark:text-slate-300 mt-0.5" x-text="item.hasil"></p>
+                                    </div>
+                                    <div>
+                                        <span class="text-slate-400 font-medium text-[10px] uppercase tracking-wider block">Keterangan:</span>
+                                        <p class="text-slate-600 dark:text-slate-400 mt-0.5" x-text="item.ket || '-'"></p>
+                                    </div>
+                                    <div class="pt-2 flex justify-end">
+                                        <button @click="hapusKegiatan(index)" class="bg-rose-500/10 text-rose-600 dark:text-rose-400 hover:bg-rose-500/20 font-semibold px-3.5 py-2 rounded-xl transition text-xs flex items-center gap-1.5">
+                                            🗑️ Hapus Kegiatan Ini
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
+                        <template x-if="dataKegiatan.length === 0">
+                            <p class="text-center text-xs text-slate-400 py-6">Belum ada kegiatan yang ditambahkan.</p>
+                        </template>
+                    </div>
+                </div>
+
+                <!-- Tombol Download PDF Resmi (Teks Diperbaiki Agar Rapi) -->
+                <div class="pt-2">
+                    <button type="button" @click="downloadPDF()" class="w-full bg-indigo-600 hover:bg-indigo-500 active:scale-[0.99] text-white font-bold py-4 px-6 rounded-2xl shadow-xl shadow-indigo-600/25 transition text-sm sm:text-base flex items-center justify-center gap-2">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        <span>Download PDF Resmi (<span x-text="dataKegiatan.length"></span> Kegiatan)</span>
+                    </button>
+                </div>
+            </div>
+
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="border-t border-slate-200/60 dark:border-slate-800/60 py-6 apple-glass transition-colors duration-300">
+            <div class="max-w-3xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-4">
+                <p>&copy; 2026 RT 04 Digital Initiative. All rights reserved.</p>
+                <div class="flex items-center gap-4">
+                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> System Operational</span>
+                </div>
+            </div>
+        </footer>
+
+    </div>
+
+</body>
+</html>
