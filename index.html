@@ -1,309 +1,307 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="min-h-screen" x-data="{ 
+    darkMode: false, 
+    currentView: window.location.hash === '#letters' ? 'letters' : 'home', 
+    toggleTheme() {
+        this.darkMode = !this.darkMode;
+        if (this.darkMode) {
+            document.documentElement.classList.add('dark');
+        } else {
+            document.documentElement.classList.remove('dark');
+        }
+    }
+}" :class="{ 'dark': darkMode }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Generator Laporan Kegiatan RT</title>
+    <title>RT 04 Command Center - Warga</title>
+    
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- jsPDF & AutoTable Plugin -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .apple-glass {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-bottom: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.03);
+        }
+        .dark .apple-glass {
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(25px);
+            -webkit-backdrop-filter: blur(25px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.4);
+        }
+        .apple-button {
+            background: rgba(255, 255, 255, 0.9);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(203, 213, 225, 0.8);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+        }
+        .dark .apple-button {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+        .apple-card {
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 1);
+            border-left: 1px solid rgba(255, 255, 255, 0.9);
+            border-right: 1px solid rgba(255, 255, 255, 0.4);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.4);
+            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.05);
+        }
+        .dark .apple-card {
+            background: rgba(30, 41, 59, 0.4);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(255, 255, 255, 0.12);
+            border-left: 1px solid rgba(255, 255, 255, 0.08);
+            border-right: 1px solid rgba(255, 255, 255, 0.03);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            box-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.4);
+        }
+    </style>
 </head>
-<body class="bg-slate-100 min-h-screen text-slate-800 antialiased py-6 px-3 sm:px-6">
+<body class="bg-gradient-to-br from-slate-100 via-indigo-50/50 to-slate-100 dark:from-[#050811] dark:via-[#0f172a] dark:to-[#050811] text-slate-800 dark:text-slate-100 min-h-screen selection:bg-indigo-500 selection:text-white transition-colors duration-300 relative overflow-x-hidden flex flex-col justify-between">
 
-    <div class="max-w-3xl mx-auto space-y-6">
+    <!-- Ambient Glow -->
+    <div class="fixed top-10 left-1/4 w-[450px] h-[450px] bg-indigo-500/10 dark:bg-indigo-600/20 rounded-full blur-[120px] pointer-events-none -z-10"></div>
+    <div class="fixed top-60 right-1/4 w-[400px] h-[400px] bg-purple-500/10 dark:bg-purple-600/20 rounded-full blur-[120px] pointer-events-none -z-10"></div>
+
+    <div class="flex flex-col min-h-screen justify-between w-full">
         
-        <!-- Header Judul Modern -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 text-center">
-            <h1 class="text-xl sm:text-2xl font-bold text-slate-900">Laporan Kegiatan RT</h1>
-            <p class="text-xs sm:text-sm text-slate-500 mt-1">Kelurahan Pondok Aren, Kota Tangerang Selatan</p>
-        </div>
+        <!-- HEADER / NAVIGATION PUBLIK -->
+        <header class="apple-glass sticky top-0 z-40 transition-colors duration-300">
+            <div class="max-w-3xl mx-auto px-6 h-16 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <!-- Tombol Kembali di Header (Hanya muncul saat di sub-halaman) -->
+                    <button x-show="currentView !== 'home'" @click="currentView = 'home'" class="p-2 -ml-2 rounded-xl text-slate-700 dark:text-slate-200 hover:bg-slate-500/10 transition flex items-center justify-center" title="Kembali">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+                        </svg>
+                    </button>
 
-        <!-- Bagian Pengaturan Surat -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
-            <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider">1. Pengaturan Surat</h2>
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nomor RT</label>
-                    <input type="text" id="inputNoRt" value="004" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+                    <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center font-bold text-xs text-white shadow-md shadow-indigo-500/25">
+                        RT
+                    </div>
+                    <span class="font-bold tracking-tight text-slate-900 dark:text-white text-sm sm:text-base" x-text="currentView === 'home' ? 'RT 04 Command Center' : 'Katalog Surat'">RT 04 Command Center</span>
                 </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Ketua RT</label>
-                    <input type="text" id="inputNamaRt" value="SANIYAH" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm uppercase focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Tempat & Tanggal Surat</label>
-                    <input type="text" id="inputTempatTanggal" value="Pondok Aren, 5 November 2026" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
+
+                <div class="flex items-center gap-2">
+                    <!-- Tombol Ganti Tema -->
+                    <button @click="toggleTheme()" class="p-2.5 rounded-xl apple-button text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition" title="Ganti Tema">
+                        <svg x-show="darkMode" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <svg x-show="!darkMode" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"></path></svg>
+                    </button>
+                    
+                    <!-- Tombol Portal Pengurus (Ikon Kunci) -->
+                    <a href="admin.html" class="p-2.5 rounded-xl apple-button text-slate-700 dark:text-slate-200 hover:scale-105 active:scale-95 transition flex items-center justify-center no-underline" title="Portal Pengurus">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"></path>
+                        </svg>
+                    </a>
                 </div>
             </div>
-        </div>
+        </header>
 
-        <!-- Bagian Form Input Kegiatan dengan Tombol Cepat -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
-            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-                <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider">2. Tambah Kegiatan</h2>
-                <span class="text-[11px] text-amber-600 bg-amber-50 px-2.5 py-1 rounded-lg font-medium">💡 Tips: Klik tombol cepat di bawah untuk isi otomatis</span>
-            </div>
-
-            <!-- Tombol Cepat / Template Instan -->
-            <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-                <button type="button" onclick="isiTemplate('pengajian')" class="text-left bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-800 p-2.5 rounded-xl transition text-xs font-semibold flex items-center justify-between">
-                    <span>📖 Pengajian Musola</span>
-                    <span class="text-[10px] bg-blue-200 text-blue-900 px-1.5 py-0.5 rounded">Pakai</span>
-                </button>
-                <button type="button" onclick="isiTemplate('arisan')" class="text-left bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 text-emerald-800 p-2.5 rounded-xl transition text-xs font-semibold flex items-center justify-between">
-                    <span>☕ Arisan & Senam</span>
-                    <span class="text-[10px] bg-emerald-200 text-emerald-900 px-1.5 py-0.5 rounded">Pakai</span>
-                </button>
-                <button type="button" onclick="isiTemplate('posyandu')" class="text-left bg-purple-50 hover:bg-purple-100 border border-purple-200 text-purple-800 p-2.5 rounded-xl transition text-xs font-semibold flex items-center justify-between">
-                    <span>👶 Kegiatan Posyandu</span>
-                    <span class="text-[10px] bg-purple-200 text-purple-900 px-1.5 py-0.5 rounded">Pakai</span>
-                </button>
-            </div>
-
-            <div class="space-y-3 pt-2">
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Hari / Tanggal Kegiatan</label>
-                    <input type="text" id="inputTanggal" placeholder="Contoh: 5 Juli 2026" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Uraian Kegiatan</label>
-                    <textarea id="inputUraian" rows="2" placeholder="Nama kegiatan yang dilakukan..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition"></textarea>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Hasil Kegiatan</label>
-                    <textarea id="inputHasil" rows="2" placeholder="Hasil atau tujuan kegiatan..." class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition"></textarea>
-                </div>
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Keterangan (Opsional)</label>
-                    <input type="text" id="inputKet" placeholder="Contoh: Rutin / Pengajian" class="w-full bg-slate-50 border border-slate-300 rounded-xl px-3 py-2.5 text-sm focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition">
-                </div>
-            </div>
-            <button type="button" id="btnTambah" class="w-full bg-emerald-600 hover:bg-emerald-700 active:scale-[0.99] text-white font-semibold py-3 px-4 rounded-xl shadow-sm transition text-sm flex items-center justify-center gap-2">
-                <span>+ Masukkan ke Daftar</span>
-            </button>
-        </div>
-
-        <!-- Daftar Kegiatan Model Accordion (Daftar Lipat) -->
-        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5 space-y-4">
-            <div class="flex justify-between items-center">
-                <h2 class="text-sm font-bold text-slate-700 uppercase tracking-wider">3. Daftar Kegiatan (<span id="jumlahKegiatan">0</span>)</h2>
-                <span class="text-xs text-slate-400">Klik untuk buka/tutup detail</span>
-            </div>
+        <!-- MAIN CONTENT (WARGA) -->
+        <main class="max-w-3xl mx-auto px-6 py-10 w-full flex-grow">
             
-            <div id="containerListKegiatan" class="space-y-2">
-                <!-- Data accordion akan muncul secara dinamis di sini -->
-            </div>
-        </div>
+            <!-- VIEW 1: DASHBOARD UTAMA -->
+            <div x-show="currentView === 'home'" x-transition>
+                <div class="mb-8">
+                    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-1">Dashboard Layanan Warga</h2>
+                    <p class="text-sm text-slate-600 dark:text-slate-400">Pusat kontrol administrasi dan layanan warga RT 04.</p>
+                </div>
 
-        <!-- Tombol Download PDF Utama -->
-        <div class="pt-2">
-            <button type="button" id="btnDownload" class="w-full bg-blue-600 hover:bg-blue-700 active:scale-[0.99] text-white font-bold py-4 px-6 rounded-2xl shadow-md transition text-base flex items-center justify-center gap-2">
-                📥 Download File PDF Resmi
-            </button>
-        </div>
+                <div class="flex flex-col gap-4">
+                    <!-- Card 1: Layanan Surat -->
+                    <button @click="currentView = 'letters'" class="w-full text-left group apple-card p-5 sm:p-6 rounded-2xl transition-all duration-300 flex items-center justify-between hover:scale-[1.01] hover:shadow-xl hover:shadow-indigo-500/10">
+                        <div class="flex items-center gap-4">
+                            <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0 group-hover:bg-indigo-500 group-hover:text-white transition-all duration-300 shadow-inner">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-900 dark:text-white text-base sm:text-lg tracking-tight">Layanan Surat</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Generator dokumen & surat resmi RT 04</p>
+                            </div>
+                        </div>
+                        <div class="shrink-0 flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-indigo-600 dark:text-indigo-400 group-hover:translate-x-1 transition-transform bg-indigo-500/10 px-3.5 py-2 rounded-xl border border-indigo-500/20">
+                            <span>Buka</span>
+                            <span>&rarr;</span>
+                        </div>
+                    </button>
+
+                    <!-- Card 2: Peta Rumah -->
+                    <a href="#" class="group apple-card p-5 sm:p-6 rounded-2xl transition-all duration-300 flex items-center justify-between hover:scale-[1.01] hover:shadow-xl hover:shadow-emerald-500/10 no-underline">
+                        <div class="flex items-center gap-4">
+                            <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0 group-hover:bg-emerald-500 group-hover:text-white transition-all duration-300 shadow-inner">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-900 dark:text-white text-base sm:text-lg tracking-tight">Peta Rumah</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Direktori alamat rumah & kurir</p>
+                            </div>
+                        </div>
+                        <div class="shrink-0 flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-emerald-600 dark:text-emerald-400 group-hover:translate-x-1 transition-transform bg-emerald-500/10 px-3.5 py-2 rounded-xl border border-emerald-500/20">
+                            <span>Buka</span>
+                            <span>&rarr;</span>
+                        </div>
+                    </a>
+
+                    <!-- Card 3: Form Pendatang Baru -->
+                    <a href="#" class="group apple-card p-5 sm:p-6 rounded-2xl transition-all duration-300 flex items-center justify-between hover:scale-[1.01] hover:shadow-xl hover:shadow-amber-500/10 no-underline">
+                        <div class="flex items-center gap-4">
+                            <div class="w-11 h-11 sm:w-12 sm:h-12 rounded-2xl bg-amber-500/10 border border-amber-500/20 text-amber-600 dark:text-amber-400 flex items-center justify-center shrink-0 group-hover:bg-amber-500 group-hover:text-white transition-all duration-300 shadow-inner">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"></path></svg>
+                            </div>
+                            <div>
+                                <h3 class="font-bold text-slate-900 dark:text-white text-base sm:text-lg tracking-tight">Form Pendatang Baru</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 mt-0.5">Pencatatan data tamu & pendatang via WhatsApp</p>
+                            </div>
+                        </div>
+                        <div class="shrink-0 flex items-center gap-1.5 text-xs sm:text-sm font-semibold text-amber-600 dark:text-amber-400 group-hover:translate-x-1 transition-transform bg-amber-500/10 px-3.5 py-2 rounded-xl border border-amber-500/20">
+                            <span>Buka</span>
+                            <span>&rarr;</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- VIEW 2: KATALOG PILIHAN JENIS SURAT -->
+            <div x-show="currentView === 'letters'" x-transition>
+
+                <div class="mb-6">
+                    <h2 class="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mb-1">Katalog Surat RT 04</h2>
+                    <p class="text-sm text-slate-600 dark:text-slate-400">Pilih jenis dokumen atau surat yang ingin Anda buat.</p>
+                </div>
+
+                <!-- Kategori 1: Surat Ber-Token (Keamanan / Warga) -->
+                <div class="mb-6">
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-3 px-1">🔒 Layanan Kependudukan (Ber-Token)</p>
+                    <div class="flex flex-col gap-3">
+                        
+                        <!-- Surat 1: KTP / KK -->
+                        <div @click="alert('Membuka form Pengantar KTP / KK (Sistem Token)')" class="apple-card p-5 rounded-2xl flex items-center justify-between cursor-pointer hover:scale-[1.01] transition group">
+                            <div class="flex items-center gap-4">
+                                <div class="w-11 h-11 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V8a2 2 0 00-2-2h-5m-4 0V5a2 2 0 114 0v1m-4 0a2 2 0 104 0m-5 8a1 1 0 011-1h6a1 1 0 110 2h-6a1 1 0 01-1-1zm1-3a1 1 0 100 2h2a1 1 0 100-2h-2z"></path></svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900 dark:text-white text-sm sm:text-base">Surat Pengantar KTP / KK</h3>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">Pengurusan dokumen kependudukan kelurahan</p>
+                                </div>
+                            </div>
+                            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-inner">
+                                <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </div>
+                        </div>
+
+                        <!-- Surat 2: Domisili -->
+                        <a href="suratDomisili.html" class="apple-card p-5 rounded-2xl flex items-center justify-between cursor-pointer hover:scale-[1.01] transition group no-underline">
+                            <div class="flex items-center gap-4">
+                                <div class="w-11 h-11 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900 dark:text-white text-sm sm:text-base">Surat Keterangan Domisili</h3>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">Keperluan kerja, bank, atau instansi</p>
+                                </div>
+                            </div>
+                            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-inner">
+                                <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </div>
+                        </a>
+
+                        <!-- Surat 3: Izin Kegiatan -->
+                        <div @click="alert('Membuka form Pengantar Izin Kegiatan (Sistem Token)')" class="apple-card p-5 rounded-2xl flex items-center justify-between cursor-pointer hover:scale-[1.01] transition group">
+                            <div class="flex items-center gap-4">
+                                <div class="w-11 h-11 rounded-2xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900 dark:text-white text-sm sm:text-base">Surat Pengantar Izin Kegiatan</h3>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">Izin keramaian / acara warga di lingkungan RT</p>
+                                </div>
+                            </div>
+                            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-indigo-600 dark:text-indigo-400 flex items-center justify-center group-hover:bg-indigo-600 group-hover:text-white transition-all shadow-inner">
+                                <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- Kategori 2: Dokumen Instan (Tanpa Token - Akses Cepat Ketua RT) -->
+                <div>
+                    <p class="text-[11px] font-bold uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-3 px-1">⚡ Dokumen Instan (Tanpa Token / Akses Ketua RT)</p>
+                    <div class="flex flex-col gap-3">
+                        
+                        <!-- Surat 4: Undangan -->
+                        <div @click="alert('Membuka generator Surat Undangan Instan')" class="apple-card p-5 rounded-2xl flex items-center justify-between cursor-pointer hover:scale-[1.01] transition group border-emerald-500/20">
+                            <div class="flex items-center gap-4">
+                                <div class="w-11 h-11 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z"></path></svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900 dark:text-white text-sm sm:text-base">Surat Undangan (Rapat / Warga)</h3>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">Cetak instan undangan rapat RT / kerja bakti</p>
+                                </div>
+                            </div>
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-inner">
+                                <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </div>
+                        </div>
+
+                        <!-- Surat 5: Laporan Kegiatan (Terhubung ke laporanKegiatan.html) -->
+                        <a href="laporanKegiatan.html" class="apple-card p-5 rounded-2xl flex items-center justify-between hover:scale-[1.01] transition group border-emerald-500/20 no-underline">
+                            <div class="flex items-center gap-4">
+                                <div class="w-11 h-11 rounded-2xl bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 flex items-center justify-center shrink-0">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                                </div>
+                                <div>
+                                    <h3 class="font-bold text-slate-900 dark:text-white text-sm sm:text-base">Laporan Kegiatan RT</h3>
+                                    <p class="text-xs text-slate-500 dark:text-slate-400">Dokumentasi & rekapitulasi kegiatan lingkungan</p>
+                                </div>
+                            </div>
+                            <div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-600 dark:text-emerald-400 flex items-center justify-center group-hover:bg-emerald-600 group-hover:text-white transition-all shadow-inner">
+                                <svg class="w-4 h-4 group-hover:translate-x-0.5 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </div>
+                        </a>
+
+                    </div>
+                </div>
+
+            </div>
+
+        </main>
+
+        <!-- FOOTER -->
+        <footer class="border-t border-slate-200/60 dark:border-slate-800/60 py-6 apple-glass transition-colors duration-300">
+            <div class="max-w-3xl mx-auto px-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400 gap-4">
+                <p>&copy; 2026 RT 04 Digital Initiative. All rights reserved.</p>
+                <div class="flex items-center gap-4">
+                    <span class="flex items-center gap-1.5"><span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span> System Operational</span>
+                </div>
+            </div>
+        </footer>
 
     </div>
 
-    <!-- Script Logika, Template Instan, & Accordion -->
-    <script>
-        let dataKegiatan = [
-            { tanggal: "5 Juli 2026", uraian: "KEGIATAN PENGAJIAN MINGGUAN MAJELIS TALIM MUSOLA AR-RIDO", hasil: "MENINGKATKAN IKATAN TALI SILATURAHMI", ket: "PENGAJIAN MINGGUAN" },
-            { tanggal: "11 Juli 2026", uraian: "ARISAN BULANAN LINGKUNGAN RT 004 & SENAM BERSAMA", hasil: "MENJAGA KEBERSAMAAN DAN MEMPERERAT SILATURAHMI ANTAR WARGA RT 004", ket: "DILAKUKAN RUTIN TIAP BULAN" },
-            { tanggal: "21 Juli 2026", uraian: "KEGIATAN POSYANDU", hasil: "MEMASTIKAN KESEHATAN BALITA DAN IBU HAMIL DILINGKUNGAN RT 004", ket: "DILAKUKAN RUTIN TIAP BULAN" }
-        ];
-
-        // Fungsi Tombol Cepat / Template Instan
-        window.isiTemplate = function(jenis) {
-            if (jenis === 'pengajian') {
-                document.getElementById('inputUraian').value = "KEGIATAN PENGAJIAN MINGGUAN MAJELIS TALIM MUSOLA AR-RIDO";
-                document.getElementById('inputHasil').value = "MENINGKATKAN IKATAN TALI SILATURAHMI";
-                document.getElementById('inputKet').value = "PENGAJIAN MINGGUAN";
-            } else if (jenis === 'arisan') {
-                document.getElementById('inputUraian').value = "ARISAN BULANAN LINGKUNGAN RT 004 & SENAM BERSAMA";
-                document.getElementById('inputHasil').value = "MENJAGA KEBERSAMAAN DAN MEMPERERAT SILATURAHMI ANTAR WARGA RT 004";
-                document.getElementById('inputKet').value = "DILAKUKAN RUTIN TIAP BULAN";
-            } else if (jenis === 'posyandu') {
-                document.getElementById('inputUraian').value = "KEGIATAN POSYANDU";
-                document.getElementById('inputHasil').value = "MEMASTIKAN KESEHATAN BALITA DAN IBU HAMIL DILINGKUNGAN RT 004";
-                document.getElementById('inputKet').value = "DILAKUKAN RUTIN TIAP BULAN";
-            }
-            // Fokus otomatis ke kolom tanggal agar user tinggal isi tanggalnya
-            document.getElementById('inputTanggal').focus();
-        }
-
-        function renderTabel() {
-            const container = document.getElementById('containerListKegiatan');
-            document.getElementById('jumlahKegiatan').innerText = dataKegiatan.length;
-            container.innerHTML = '';
-            
-            if (dataKegiatan.length === 0) {
-                container.innerHTML = `<p class="text-center text-xs text-slate-400 py-4">Belum ada kegiatan yang ditambahkan.</p>`;
-                return;
-            }
-
-            dataKegiatan.forEach((item, index) => {
-                const wrapper = document.createElement('div');
-                wrapper.className = "border border-slate-200 rounded-xl overflow-hidden bg-slate-50 transition";
-                
-                wrapper.innerHTML = `
-                    <div onclick="toggleAccordion(${index})" class="p-3.5 sm:p-4 flex justify-between items-center cursor-pointer hover:bg-slate-100 select-none">
-                        <div class="flex items-center gap-3 overflow-hidden">
-                            <span class="bg-blue-600 text-white font-bold text-xs px-2 py-1 rounded-lg shrink-0">#${index + 1}</span>
-                            <div class="truncate">
-                                <p class="text-xs font-bold text-slate-800 truncate">${item.uraian}</p>
-                                <p class="text-[11px] text-slate-500">${item.tanggal}</p>
-                            </div>
-                        </div>
-                        <div class="flex items-center gap-2 shrink-0">
-                            <span id="icon-${index}" class="text-slate-400 text-xs font-bold transition-transform duration-200">▼</span>
-                        </div>
-                    </div>
-
-                    <div id="content-${index}" class="hidden px-4 pb-4 pt-1 border-t border-slate-200 bg-white text-xs sm:text-sm space-y-2">
-                        <div>
-                            <span class="text-slate-400 font-medium text-[10px] uppercase block">Hari / Tanggal:</span>
-                            <p class="font-semibold text-slate-700">${item.tanggal}</p>
-                        </div>
-                        <div>
-                            <span class="text-slate-400 font-medium text-[10px] uppercase block">Uraian Kegiatan:</span>
-                            <p class="font-semibold text-slate-800">${item.uraian}</p>
-                        </div>
-                        <div>
-                            <span class="text-slate-400 font-medium text-[10px] uppercase block">Hasil Kegiatan:</span>
-                            <p class="text-slate-700">${item.hasil}</p>
-                        </div>
-                        <div>
-                            <span class="text-slate-400 font-medium text-[10px] uppercase block">Keterangan:</span>
-                            <p class="text-slate-600">${item.ket || '-'}</p>
-                        </div>
-                        <div class="pt-2 flex justify-end">
-                            <button onclick="hapusBaris(${index})" class="bg-red-50 text-red-600 hover:bg-red-100 font-semibold px-3 py-1.5 rounded-lg transition text-xs">
-                                🗑️ Hapus Kegiatan Ini
-                            </button>
-                        </div>
-                    </div>
-                `;
-                container.appendChild(wrapper);
-            });
-        }
-
-        window.toggleAccordion = function(index) {
-            const content = document.getElementById(`content-${index}`);
-            const icon = document.getElementById(`icon-${index}`);
-            
-            if (content.classList.contains('hidden')) {
-                content.classList.remove('hidden');
-                icon.style.transform = 'rotate(180deg)';
-            } else {
-                content.classList.add('hidden');
-                icon.style.transform = 'rotate(0deg)';
-            }
-        }
-
-        document.getElementById('btnTambah').addEventListener('click', function() {
-            const tanggal = document.getElementById('inputTanggal').value.trim();
-            const uraian = document.getElementById('inputUraian').value.trim();
-            const hasil = document.getElementById('inputHasil').value.trim();
-            const ket = document.getElementById('inputKet').value.trim();
-
-            if(!tanggal || !uraian || !hasil) {
-                alert('Harap isi Tanggal, Uraian, dan Hasil Kegiatan terlebih dahulu!');
-                return;
-            }
-
-            dataKegiatan.push({ tanggal, uraian, hasil, ket });
-            renderTabel();
-
-            // Reset input form
-            document.getElementById('inputTanggal').value = '';
-            document.getElementById('inputUraian').value = '';
-            document.getElementById('inputHasil').value = '';
-            document.getElementById('inputKet').value = '';
-        });
-
-        window.hapusBaris = function(index) {
-            dataKegiatan.splice(index, 1);
-            renderTabel();
-        }
-
-        renderTabel();
-
-        // LOGIKA GENERATE PDF (Tetap dipertahankan 100% aman)
-        document.getElementById('btnDownload').addEventListener('click', function () {
-            const { jsPDF } = window.jspdf;
-            const doc = new jsPDF('l', 'mm', 'a4'); // Landscape A4
-
-            const noRt = document.getElementById('inputNoRt').value || '004';
-            const namaRt = document.getElementById('inputNamaRt').value || 'SANIYAH';
-            const tempatTanggal = document.getElementById('inputTempatTanggal').value || 'Pondok Aren, 5 November 2026';
-
-            const tableRows = dataKegiatan.map((item, index) => [
-                index + 1,
-                item.tanggal,
-                item.uraian,
-                item.hasil,
-                item.ket || '-'
-            ]);
-
-            let pageHeight = doc.internal.pageSize.getHeight();
-            let pageWidth = doc.internal.pageSize.getWidth();
-
-            function drawHeader() {
-                doc.setFont("helvetica", "bold");
-                doc.setFontSize(12);
-                doc.text("LAPORAN KEGIATAN", pageWidth / 2, 15, { align: "center" });
-                doc.text(`RT. ${noRt}/002 KELURAHAN PONDOK AREN`, pageWidth / 2, 21, { align: "center" });
-                doc.setFontSize(10);
-                doc.text("KECAMATAN PONDOK AREN, KOTA TANGERANG SELATAN", pageWidth / 2, 27, { align: "center" });
-                
-                doc.setLineWidth(0.5);
-                doc.line(14, 31, pageWidth - 14, 31);
-            }
-
-            function drawFooter() {
-                let yPos = pageHeight - 45; 
-                let rightX = pageWidth - 25;      
-                let centerRtX = pageWidth - 45;   
-
-                doc.setFont("helvetica", "normal");
-                doc.setFontSize(10);
-
-                // Kiri: Ketua RW
-                doc.text("Mengetahui,", 25, yPos);
-                doc.text("Ketua RW. 002", 25, yPos + 6);
-                doc.text("H. ABDUL MANAN", 25, yPos + 32); 
-
-                // Kanan: Tanggal & TTD RT
-                doc.text(tempatTanggal, rightX, yPos, { align: "right" });
-                doc.text(`Ketua RT. ${noRt}`, centerRtX, yPos + 6, { align: "center" });
-                doc.text(namaRt.toUpperCase(), centerRtX, yPos + 32, { align: "center" });
-            }
-
-            doc.autoTable({
-                head: [['NO', 'HARI/TANGGAL', 'URAIAN KEGIATAN', 'HASIL KEGIATAN', 'KET.']],
-                body: tableRows,
-                startY: 36,
-                margin: { top: 36, bottom: 50, left: 14, right: 14 },
-                theme: 'grid',
-                headStyles: { fillColor: [240, 240, 240], textColor: [0, 0, 0], fontStyle: 'bold', halign: 'center' },
-                styles: { fontSize: 9, cellPadding: 3, textColor: [0, 0, 0] },
-                columnStyles: {
-                    0: { halign: 'center', cellWidth: 12 },
-                    1: { halign: 'center', cellWidth: 35 },
-                    2: { cellWidth: 'auto' },
-                    3: { cellWidth: 'auto' },
-                    4: { halign: 'center', cellWidth: 40 }
-                },
-                didDrawPage: function (data) {
-                    drawHeader();
-                    drawFooter();
-                }
-            });
-
-            doc.save(`Laporan-Kegiatan-RT${noRt}.pdf`);
-        });
-    </script>
 </body>
 </html>
