@@ -1,5 +1,55 @@
 <!DOCTYPE html>
-<html lang="id" class="min-h-screen" x-data="{ darkMode: false, isAuthenticated: false, password: '', showLogoutModal: false }" :class="{ 'dark': darkMode }">
+<html lang="id" class="min-h-screen" x-data="{ 
+    darkMode: false, 
+    isAuthenticated: false, 
+    password: '', 
+    showLogoutModal: false,
+    activeToken: 'MEMUAT...',
+    tokenPool: [
+        'RT04-A8F29', 'RT04-B3K91', 'RT04-C7X45', 'RT04-D1M83', 'RT04-E9P24',
+        'RT04-F4H67', 'RT04-G2L59', 'RT04-H6Q12', 'RT04-I5J88', 'RT04-J3N76',
+        'RT04-K8R33', 'RT04-L1W95', 'RT04-M7Y41', 'RT04-N2Z18', 'RT04-O9V50',
+        'RT04-P4B62', 'RT04-Q6C37', 'RT04-R1D89', 'RT04-S8E44', 'RT04-T3F90',
+        'RT04-U5G21', 'RT04-V7H65', 'RT04-W2I83', 'RT04-X9J14', 'RT04-Y4K55',
+        'RT04-Z6L78', 'RT04-A1M92', 'RT04-B8N36', 'RT04-C3O49', 'RT04-D5P81',
+        'RT04-E7Q27', 'RT04-F2R63', 'RT04-G9S38', 'RT04-H4T51', 'RT04-I1U94',
+        'RT04-J6V22', 'RT04-K3W79', 'RT04-L8X50', 'RT04-M5Y16', 'RT04-N7Z68',
+        'RT04-O2A43', 'RT04-P9B85', 'RT04-Q4C19', 'RT04-R6D72', 'RT04-S1E35',
+        'RT04-T8F60', 'RT04-U3G98', 'RT04-V5H11', 'RT04-W7I46', 'RT04-X2J80'
+    ],
+    copied: false,
+
+    // Fungsi Mengacak & Mengirim Token ke Firebase Realtime Database
+    generateNewToken() {
+        const randomIndex = Math.floor(Math.random() * this.tokenPool.length);
+        this.activeToken = this.tokenPool[randomIndex];
+        
+        // Kirim ke server online Firebase agar warga bisa mendeteksinya otomatis
+        if (window.dbSet && window.dbRef && window.db) {
+            window.dbSet(window.dbRef(window.db, 'tokenAktif'), {
+                token: this.activeToken
+            }).then(() => {
+                alert('Token baru berhasil di-generate & dikirim ke server: ' + this.activeToken);
+            }).catch((error) => {
+                alert('Gagal mengirim token ke server: ' + error.message);
+            });
+        } else {
+            alert('Token diacak (Lokal): ' + this.activeToken);
+        }
+        this.copied = false;
+    },
+
+    copyToClipboard(token) {
+        navigator.clipboard.writeText(token);
+        this.copied = true;
+        setTimeout(() => this.copied = false, 2500);
+    },
+
+    getWhatsAppLink(token) {
+        const message = encodeURIComponent(`Halo, berikut adalah token akses unik Anda untuk pengajuan Surat Keterangan Domisili RT 04 Pondok Aren: *${token}*. Silakan masukkan token ini pada portal layanan warga.`);
+        return `https://wa.me/?text=${message}`;
+    }
+}" :class="{ 'dark': darkMode }">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,6 +63,43 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     <!-- Google Fonts: Plus Jakarta Sans -->
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- KODE PENGHUBUNG FIREBASE ANDA -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-app.js";
+        import { getDatabase, ref, set, get, child } from "https://www.gstatic.com/firebasejs/13.2.0/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyC2ZoGufiSUgmo_U6JJVsea2xaDRVVIlJ4",
+            authDomain: "devwebrt-74205.firebaseapp.com",
+            databaseURL: "https://devwebrt-74205-default-rtdb.firebaseio.com",
+            projectId: "devwebrt-74205",
+            storageBucket: "devwebrt-74205.firebasestorage.app",
+            messagingSenderId: "49571605713",
+            appId: "1:49571605713:web:41f281889232909bd3e9f0",
+            measurementId: "G-J7JRG3DZEM"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Daftarkan ke global agar Alpine.js bisa menggunakannya
+        window.db = db;
+        window.dbRef = ref;
+        window.dbSet = set;
+
+        // Ambil token aktif yang terakhir tersimpan di server saat halaman dimuat
+        const tokenRef = ref(db, 'tokenAktif/token');
+        get(tokenRef).then((snapshot) => {
+            if (snapshot.exists()) {
+                // Cari elemen Alpine dan perbarui nilainya jika diperlukan
+                document.body.__x?.$data && (document.body.__x.$data.activeToken = snapshot.val());
+            }
+        }).catch((error) => {
+            console.error(error);
+        });
+    </script>
+
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; }
         .apple-glass {
@@ -138,10 +225,10 @@
             </div>
 
             <!-- DASHBOARD ADMIN (COMPACT & ONE-SCREEN) -->
-            <div x-show="isAuthenticated" x-transition class="w-full">
+            <div x-show="isAuthenticated" x-transition class="w-full space-y-5">
                 
                 <!-- Header Ringkas -->
-                <div class="flex items-center justify-between mb-6">
+                <div class="flex items-center justify-between">
                     <div>
                         <h2 class="text-xl sm:text-2xl font-extrabold tracking-tight text-slate-900 dark:text-white">Panel Kendali</h2>
                         <p class="text-xs text-slate-500 dark:text-slate-400">Sistem terenkripsi aktif & siap digunakan.</p>
@@ -151,55 +238,56 @@
                     </span>
                 </div>
 
-                <!-- Statistik Mini (1 Baris) -->
-                <div class="grid grid-cols-3 gap-3 mb-5">
-                    <div class="apple-card p-4 rounded-2xl text-center">
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Warga</p>
-                        <h3 class="text-lg font-bold text-slate-900 dark:text-white mt-0.5">142</h3>
+                <!-- KARTU KONTROL TOKEN (FITUR UTAMA) -->
+                <div class="apple-card p-6 rounded-3xl shadow-sm border border-slate-200/60 dark:border-slate-700/60 text-center space-y-4">
+                    <span class="text-xs font-semibold uppercase tracking-wider text-slate-400">Token Akses Aktif Saat Ini</span>
+                    <div class="text-3xl sm:text-4xl font-mono font-extrabold text-indigo-600 dark:text-indigo-400 tracking-widest bg-white/50 dark:bg-slate-900/50 py-4 px-6 rounded-2xl border border-slate-200/80 dark:border-slate-700/60 shadow-inner inline-block" x-text="activeToken"></div>
+                    
+                    <div class="flex flex-col sm:flex-row justify-center gap-3 pt-2">
+                        <!-- Tombol Acak & Kirim ke Server -->
+                        <button @click="generateNewToken()" class="bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-5 py-3 rounded-2xl transition shadow-lg shadow-emerald-600/20 flex items-center justify-center gap-2 text-xs">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                            Acak & Kirim Token Baru
+                        </button>
+
+                        <!-- Tombol Salin Token -->
+                        <button @click="copyToClipboard(activeToken)" class="apple-button text-slate-700 dark:text-slate-200 font-semibold px-5 py-3 rounded-2xl transition flex items-center justify-center gap-2 text-xs">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-1M8 5a2 2 0 002 2h2a2 2 0 002-2M8 5a2 2 0 012-2h2a2 2 0 012 2m0 0h2a2 2 0 012 2v3m2 4H10m0 0l3-3m-3 3l3 3"></path></svg>
+                            <span x-text="copied ? 'Berhasil Disalin!' : 'Salin Token'"></span>
+                        </button>
                     </div>
-                    <div class="apple-card p-4 rounded-2xl text-center">
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Surat</p>
-                        <h3 class="text-lg font-bold text-slate-900 dark:text-white mt-0.5">18</h3>
-                    </div>
-                    <div class="apple-card p-4 rounded-2xl text-center">
-                        <p class="text-[11px] text-slate-500 dark:text-slate-400 font-medium">Status</p>
-                        <h3 class="text-lg font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">Aman</h3>
+
+                    <!-- Tombol Kirim WhatsApp -->
+                    <div class="pt-1 flex justify-center">
+                        <a :href="getWhatsAppLink(activeToken)" target="_blank" class="text-xs bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-800/60 px-4 py-2.5 rounded-xl transition font-medium flex items-center gap-2">
+                            <svg class="w-4 h-4 text-emerald-600 dark:text-emerald-400" fill="currentColor" viewBox="0 0 24 24"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981zm11.387-5.464c-.074-.124-.272-.198-.57-.347-.297-.149-1.758-.868-2.031-.967-.272-.099-.47-.149-.669.149-.198.297-.768.967-.941 1.165-.173.198-.347.223-.644.074-.297-.149-1.255-.462-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.521.151-.172.2-.296.3-.495.099-.198.05-.372-.025-.521-.075-.148-.669-1.611-.916-2.206-.242-.579-.487-.501-.669-.51l-.57-.01c-.198 0-.52.074-.792.372s-1.04 1.016-1.04 2.479 1.065 2.876 1.213 3.074c.149.198 2.095 3.2 5.076 4.487.709.306 1.263.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.695.248-1.29.173-1.414z"/></svg>
+                            Kirim Token Aktif via WhatsApp
+                        </a>
                     </div>
                 </div>
 
-                <!-- Menu Modul Utama (Compact List) -->
+                <!-- Menu Modul Pendukung Lainnya -->
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <a href="getToken.html" class="apple-card p-5 rounded-2xl flex items-center justify-between hover:scale-[1.01] transition group">
+                    <a href="#" class="apple-card p-4 rounded-2xl flex items-center justify-between hover:scale-[1.01] transition group">
                         <div class="flex items-center gap-3.5">
-                            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">👥</div>
+                            <div class="w-9 h-9 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm">👥</div>
                             <div>
-                                <h3 class="font-bold text-slate-900 dark:text-white text-sm">Get Token</h3>
-                                <p class="text-[11px] text-slate-500 dark:text-slate-400">Dekripsi NIK & Export Excel</p>
+                                <h3 class="font-bold text-slate-900 dark:text-white text-xs">Master Data Warga</h3>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400">Kelola database warga RT 04</p>
                             </div>
                         </div>
-                        <span class="text-indigo-600 dark:text-indigo-400 font-semibold text-sm group-hover:translate-x-1 transition-transform">&rarr;</span>
+                        <span class="text-indigo-600 dark:text-indigo-400 font-semibold text-xs group-hover:translate-x-1 transition-transform">&rarr;</span>
                     </a>
 
-                    <a href="#" class="apple-card p-5 rounded-2xl flex items-center justify-between hover:scale-[1.01] transition group">
+                    <a href="#" class="apple-card p-4 rounded-2xl flex items-center justify-between hover:scale-[1.01] transition group">
                         <div class="flex items-center gap-3.5">
-                            <div class="w-10 h-10 rounded-xl bg-indigo-500/10 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold">👥</div>
+                            <div class="w-9 h-9 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold text-sm">📄</div>
                             <div>
-                                <h3 class="font-bold text-slate-900 dark:text-white text-sm">Master Data Warga</h3>
-                                <p class="text-[11px] text-slate-500 dark:text-slate-400">Dekripsi NIK & Export Excel</p>
+                                <h3 class="font-bold text-slate-900 dark:text-white text-xs">Arsip Surat Masuk</h3>
+                                <p class="text-[10px] text-slate-500 dark:text-slate-400">Daftar pengajuan surat domisili</p>
                             </div>
                         </div>
-                        <span class="text-indigo-600 dark:text-indigo-400 font-semibold text-sm group-hover:translate-x-1 transition-transform">&rarr;</span>
-                    </a>
-
-                    <a href="#" class="apple-card p-5 rounded-2xl flex items-center justify-between hover:scale-[1.01] transition group">
-                        <div class="flex items-center gap-3.5">
-                            <div class="w-10 h-10 rounded-xl bg-violet-500/10 text-violet-600 dark:text-violet-400 flex items-center justify-center font-bold">🔑</div>
-                            <div>
-                                <h3 class="font-bold text-slate-900 dark:text-white text-sm">Validasi Token Surat</h3>
-                                <p class="text-[11px] text-slate-500 dark:text-slate-400">Kelola token pengantar warga</p>
-                            </div>
-                        </div>
-                        <span class="text-violet-600 dark:text-violet-400 font-semibold text-sm group-hover:translate-x-1 transition-transform">&rarr;</span>
+                        <span class="text-violet-600 dark:text-violet-400 font-semibold text-xs group-hover:translate-x-1 transition-transform">&rarr;</span>
                     </a>
                 </div>
 
